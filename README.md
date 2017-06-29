@@ -17,11 +17,11 @@ speed is 115200 bps (bits per second), and no carrier-watch.  E.g., using
 [C-Kermit](http://www.kermitproject.org/ck90.html) and supposing that your host
 computer associated /dev/ttyACM0 with the USB device,
 
-    $ kermit -l /dev/ttyACM0
-    set speed 115200
-    set carrier-watch off
-    set terminal lf-display CRLF
-    connect
+    kermit -l /dev/ttyACM0
+    > set speed 115200
+    > set carrier-watch off
+    > set terminal lf-display CRLF
+    > connect
 
 After connecting, try `#` to get the system diagnostics, and try `?` to get the
 list of serial commands.
