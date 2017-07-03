@@ -14,6 +14,7 @@
  */
 
 #include <iostream>
+#include <string>
 
 #include "ros/ros.h"
 #include "serial/serial.h"
@@ -24,11 +25,17 @@ int main( int argc, char **argv )
     ros::init( argc, argv, "bhand_diagnostics" );
     ros::NodeHandle nh;
 
-    serial::Serial bhandcom( "/dev/ttyACM0", 115200,
+    std::string devfile;
+    nh.param( "hand_dev_file", devfile, std::string( "/dev/ttyACM0" ) );
+
+    ROS_INFO( "Attempting to open %s", devfile.c_str() );
+    serial::Serial bhandcom( devfile, 115200,
                              serial::Timeout::simpleTimeout(1000) );
-    if (bhandcom.isOpen()) {
-        std::cout << "connected!" << std::endl;
+    if (!bhandcom.isOpen()) {
+        ROS_ERROR( "Failed to connect using %s", devfile.c_str() ) );
+        return 1;
     }
+
 
     ros::Rate rate( 1. );
     while (ros::ok()) {
