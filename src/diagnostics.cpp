@@ -32,7 +32,7 @@ int main( int argc, char **argv )
     serial::Serial bhandcom( devfile, 115200,
                              serial::Timeout::simpleTimeout(1000) );
     if (!bhandcom.isOpen()) {
-        ROS_ERROR( "Failed to connect using %s", devfile.c_str() ) );
+        ROS_ERROR( "Failed to connect using %s", devfile.c_str() );
         return 1;
     }
 
