@@ -4,7 +4,7 @@ project(brunel_hand_ros)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   serial
-  )
+)
 
 catkin_package()
 
