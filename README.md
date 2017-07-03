@@ -9,6 +9,13 @@ This ROS package defines several nodes and message types for working with the
 by [Open Bionics](https://www.openbionics.com).
 
 
+Parameters
+----------
+
+* `hand_dev_file`: device file corresponding to serial connection with Brunel
+  Hand. Default value is /dev/ttyACM0
+
+
 Installation and dependencies
 -----------------------------
 
