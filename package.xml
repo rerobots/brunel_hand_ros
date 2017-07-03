@@ -2,7 +2,7 @@
 <package>
   <name>brunel_hand_ros</name>
   <version>0.0.0</version>
-  <description></description>
+  <description>interface for the Brunel Hand (https://www.openbionics.com/shop/brunel-hand)</description>
 
   <maintainer email="scott@rerobots.net">Scott C. Livingston</maintainer>
   <author email="scott@rerobots.net">Scott C. Livingston</author>
