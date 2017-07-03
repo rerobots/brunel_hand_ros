@@ -4,7 +4,14 @@ project(brunel_hand_ros)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   serial
+  std_msgs
+  message_generation
 )
+
+add_message_files(DIRECTORY msg FILES
+  FingerPose.msg
+)
+generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package()
 
