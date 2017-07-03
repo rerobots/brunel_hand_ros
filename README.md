@@ -9,6 +9,17 @@ This ROS package defines several nodes and message types for working with the
 by [Open Bionics](https://www.openbionics.com).
 
 
+Installation and dependencies
+-----------------------------
+
+This package is being developed with the ROS Kinetic distribution as its initial
+target, but backward and forward ports are planned.
+
+Dependencies:
+
+* [serial](http://wjwwood.io/serial/) (on GitHub: https://github.com/wjwwood/serial/)
+
+
 Internal interface notes
 ------------------------
 
