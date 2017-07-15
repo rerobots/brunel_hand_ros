@@ -19,5 +19,5 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(diagnostics src/diagnostics.cpp)
-target_link_libraries(diagnostics ${catkin_LIBRARIES})
+add_executable(proxy src/proxy.cpp)
+target_link_libraries(proxy ${catkin_LIBRARIES})
