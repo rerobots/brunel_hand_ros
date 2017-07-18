@@ -25,7 +25,7 @@
 
 int main( int argc, char **argv )
 {
-    ros::init( argc, argv, "bhand_diagnostics" );
+    ros::init( argc, argv, "brunel_hand_proxy" );
     ros::NodeHandle nh;
     ros::Publisher posep;
 
