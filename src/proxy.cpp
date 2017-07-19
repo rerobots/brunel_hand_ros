@@ -14,6 +14,7 @@
  */
 
 #include <iostream>
+#include <vector>
 #include <string>
 #include <cstdlib>
 
@@ -21,6 +22,89 @@
 #include "serial/serial.h"
 
 #include "brunel_hand_ros/FingerPose.h"
+
+
+class BrunelHand
+{
+public:
+    BrunelHand()
+        : connected( false )
+        {}
+
+    BrunelHand( std::string devfile );
+
+    std::vector<int> readFingersPose();
+
+    /* Attempt (blocking) to get current firmware diagnostics. */
+    void updateDiagnostics();
+
+    bool getCSVmode() const;
+    bool isConnected() const;
+
+private:
+    bool csvMode;
+    bool connected;
+    serial::Serial bhandcom;
+};
+
+BrunelHand::BrunelHand( std::string devfile )
+    : bhandcom( devfile, 115200,
+                serial::Timeout::simpleTimeout(1000) )
+{
+    if (!bhandcom.isOpen()) {
+        ROS_ERROR( "Failed to connect using %s", devfile.c_str() );
+        return;
+    }
+
+    connected = true;
+    ROS_INFO( "Connected via %s", devfile.c_str() );
+}
+
+std::vector<int> BrunelHand::readFingersPose()
+{
+    std::vector<int> fpose;
+
+    std::string line;
+    // If first item is not digit, then assume that this messages is not the CSV
+    // finger data message type.
+    do {
+        line = bhandcom.readline();
+    } while (line[0] != '0' && line[0] != '1' && line[0] != '2'
+             && line[0] != '3' && line[0] != '4' && line[0] != '5'
+             && line[0] != '6' && line[0] != '7' && line[0] != '8'
+             && line[0] != '9');
+
+    int thispos = -1;  // -1 => first search is with respect to position 0
+    int nextpos = 0;
+    std::string numstring;
+    while ((nextpos = line.find( "," , thispos+1))
+           != std::string::npos) {
+        numstring = line.substr( thispos+1, nextpos-thispos-1 );
+        thispos = nextpos;
+        fpose.push_back( std::atoi( numstring.c_str() ) );
+    }
+    numstring = line.substr( thispos+1 );
+    if (numstring[0] != ' '
+        && numstring[0] != '\r'
+        &&  numstring[0] != '\n')
+        fpose.push_back( std::atoi( numstring.c_str() ) );
+    return fpose;
+}
+
+bool BrunelHand::getCSVmode() const
+{
+    return csvMode;
+}
+
+bool BrunelHand::isConnected() const
+{
+    return connected;
+}
+
+void BrunelHand::updateDiagnostics()
+{
+    // TODO
+}
 
 
 int main( int argc, char **argv )
@@ -32,46 +116,16 @@ int main( int argc, char **argv )
     std::string devfile;
     nh.param( "hand_dev_file", devfile, std::string( "/dev/ttyACM0" ) );
 
-    ROS_INFO( "Attempting to open %s", devfile.c_str() );
-    serial::Serial bhandcom( devfile, 115200,
-                             serial::Timeout::simpleTimeout(1000) );
-    if (!bhandcom.isOpen()) {
-        ROS_ERROR( "Failed to connect using %s", devfile.c_str() );
-        return 1;
-    }
-
-    ROS_INFO( "Connected." );
+    BrunelHand bhand( devfile );
+    bhand.updateDiagnostics();
 
     posep = nh.advertise<brunel_hand_ros::FingerPose>( "fpose", 10, true );
 
     ros::Rate rate( 100 );
     while (ros::ok()) {
-        std::string line = bhandcom.readline();
-
-        // If first item is not digit, then assume that this messages is not the
-        // CSV finger data message type.
-        if (line[0] != '0' && line[0] != '1' && line[0] != '2' && line[0] != '3'
-            && line[0] != '4' && line[0] != '5' && line[0] != '6'
-            && line[0] != '7' && line[0] != '8' && line[0] != '9')
-            continue;
-
         brunel_hand_ros::FingerPose currentpose;
         currentpose.header.stamp = ros::Time::now();
-        int thispos = -1;  // -1 => first search is with respect to position 0
-        int nextpos = 0;
-        std::string numstring;
-        while ((nextpos = line.find( "," , thispos+1))
-               != std::string::npos) {
-            numstring = line.substr( thispos+1, nextpos-thispos-1 );
-            thispos = nextpos;
-            currentpose.f.push_back( std::atoi( numstring.c_str() ) );
-        }
-        numstring = line.substr( thispos+1 );
-        if (numstring[0] != ' '
-            && numstring[0] != '\r'
-            &&  numstring[0] != '\n')
-            currentpose.f.push_back( std::atoi( numstring.c_str() ) );
-
+        currentpose.f = bhand.readFingersPose();
         posep.publish( currentpose );
 
         ros::spinOnce();
