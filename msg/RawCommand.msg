@@ -1,2 +1,1 @@
-Header header
 string command

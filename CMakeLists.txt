@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(brunel_hand_ros)
 
+find_package(Boost REQUIRED COMPONENTS thread)
+include_directories(${Boost_INCLUDE_DIRS})
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   serial

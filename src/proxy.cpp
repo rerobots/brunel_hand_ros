@@ -18,10 +18,13 @@
 #include <string>
 #include <cstdlib>
 
+#include <boost/thread/thread.hpp>
+
 #include "ros/ros.h"
 #include "serial/serial.h"
 
 #include "brunel_hand_ros/FingerPose.h"
+#include "brunel_hand_ros/RawCommand.h"
 
 
 class BrunelHand
@@ -40,6 +43,14 @@ public:
        known parameters are updated, or none at all. */
     void updateDiagnostics();
 
+    /* Apply string directly as input to firmware connection.
+       A newline character is appended to the given string. Of course, injection
+       of multiple commands is feasible here, but the input is assumed to be
+       trusted. Future versions may provide guards. */
+    void rawCommand( std::string cmd );
+
+    void callbackRawCommand( const brunel_hand_ros::RawCommand &rc );
+
     /* Enable CSV mode.
        Diagnostics data are updated to verify whether CSV mode is enabled. */
     void useCSVmode();
@@ -53,7 +64,22 @@ private:
     bool motorsEnabled;
     bool connected;
     serial::Serial bhandcom;
+    boost::mutex mtx_;
 };
+
+void BrunelHand::rawCommand( std::string cmd )
+{
+    mtx_.lock();
+    bhandcom.flush();
+    ROS_INFO( "SENDING: %s ", cmd.c_str() );
+    bhandcom.write( cmd + "\n" );
+    mtx_.unlock();
+}
+
+void BrunelHand::callbackRawCommand( const brunel_hand_ros::RawCommand &rc )
+{
+    rawCommand( rc.command );
+}
 
 BrunelHand::BrunelHand( std::string devfile )
     : bhandcom( devfile, 115200,
@@ -76,6 +102,7 @@ std::vector<int> BrunelHand::readFingersPose()
     std::vector<int> fpose;
 
     std::string line;
+    mtx_.lock();
     // If first item is not digit, then assume that this messages is not the CSV
     // finger data message type.
     do {
@@ -84,6 +111,7 @@ std::vector<int> BrunelHand::readFingersPose()
              && line[0] != '3' && line[0] != '4' && line[0] != '5'
              && line[0] != '6' && line[0] != '7' && line[0] != '8'
              && line[0] != '9');
+    mtx_.unlock();
 
     int thispos = -1;  // -1 => first search is with respect to position 0
     int nextpos = 0;
@@ -118,12 +146,14 @@ void BrunelHand::useCSVmode()
     if (csvMode)
         return;
 
+    mtx_.lock();
     bhandcom.flush();
     bhandcom.write( "A4\n" );
     std::string line;
     do {
         line = bhandcom.readline();
     } while (line.substr( 0, 8 ) != "CSV mode");
+    mtx_.unlock();
 }
 
 bool BrunelHand::isConnected() const
@@ -135,6 +165,8 @@ void BrunelHand::updateDiagnostics()
 {
     int incoming_csvMode = -1;
     int incoming_motorsEnabled = -1;
+
+    mtx_.lock();
     bhandcom.write( "#\n" );
     while (incoming_csvMode < 0 || incoming_motorsEnabled < 0) {
         std::string line = bhandcom.readline();
@@ -152,6 +184,7 @@ void BrunelHand::updateDiagnostics()
             }
         }
     }
+    mtx_.unlock();
     csvMode = incoming_csvMode ? true : false;
     motorsEnabled = incoming_motorsEnabled ? true : false;
 }
@@ -162,6 +195,7 @@ int main( int argc, char **argv )
     ros::init( argc, argv, "brunel_hand_proxy" );
     ros::NodeHandle nh;
     ros::Publisher posep;
+    ros::Subscriber subraw;
 
     std::string devfile;
     nh.param( "hand_dev_file", devfile, std::string( "/dev/ttyACM0" ) );
@@ -170,6 +204,8 @@ int main( int argc, char **argv )
     bhand.useCSVmode();
 
     posep = nh.advertise<brunel_hand_ros::FingerPose>( "fpose", 10, true );
+    subraw = nh.subscribe( "/raw_input", 1,
+                           &BrunelHand::callbackRawCommand, &bhand );
 
     ros::Rate rate( 100 );
     while (ros::ok()) {
