@@ -40,6 +40,8 @@ int main( int argc, char **argv )
         return 1;
     }
 
+    ROS_INFO( "Connected." );
+
     posep = nh.advertise<brunel_hand_ros::FingerPose>( "fpose", 10, true );
 
     ros::Rate rate( 100 );
