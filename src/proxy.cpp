@@ -45,10 +45,12 @@ public:
     void useCSVmode();
 
     bool getCSVmode() const;
+    bool getMotorsEnabled() const;
     bool isConnected() const;
 
 private:
     bool csvMode;
+    bool motorsEnabled;
     bool connected;
     serial::Serial bhandcom;
 };
@@ -104,6 +106,11 @@ bool BrunelHand::getCSVmode() const
     return csvMode;
 }
 
+bool BrunelHand::getMotorsEnabled() const
+{
+    return motorsEnabled;
+}
+
 void BrunelHand::useCSVmode()
 {
     this->updateDiagnostics();
@@ -126,19 +133,26 @@ bool BrunelHand::isConnected() const
 void BrunelHand::updateDiagnostics()
 {
     int incoming_csvMode = -1;
+    int incoming_motorsEnabled = -1;
     bhandcom.write( "#\n" );
-    while (incoming_csvMode < 0) {
+    while (incoming_csvMode < 0 || incoming_motorsEnabled < 0) {
         std::string line = bhandcom.readline();
-        if (line.substr( 0, 5 ) != "Mode:")
-            continue;
-
-        if (line.find( "CSV" ) != std::string::npos) {
-            incoming_csvMode = 1;
-        } else {
-            incoming_csvMode = 0;
+        if (line.substr( 0, 5 ) == "Mode:") {
+            if (line.find( "CSV" ) != std::string::npos) {
+                incoming_csvMode = 1;
+            } else {
+                incoming_csvMode = 0;
+            }
+        } else if (line.substr( 0, 7 ) == "Motors:") {
+            if (line.find( "ENABLED" ) != std::string::npos) {
+                incoming_motorsEnabled = 1;
+            } else {
+                incoming_motorsEnabled = 0;
+            }
         }
     }
     csvMode = incoming_csvMode ? true : false;
+    motorsEnabled = incoming_motorsEnabled ? true : false;
 }
 
 
