@@ -64,6 +64,8 @@ BrunelHand::BrunelHand( std::string devfile )
 
     connected = true;
     ROS_INFO( "Connected via %s", devfile.c_str() );
+
+    updateDiagnostics();
 }
 
 std::vector<int> BrunelHand::readFingersPose()
