@@ -57,7 +57,8 @@ private:
 
 BrunelHand::BrunelHand( std::string devfile )
     : bhandcom( devfile, 115200,
-                serial::Timeout::simpleTimeout(1000) )
+                serial::Timeout::simpleTimeout(1000) ),
+      connected( false )
 {
     if (!bhandcom.isOpen()) {
         ROS_ERROR( "Failed to connect using %s", devfile.c_str() );
