@@ -40,6 +40,10 @@ public:
        known parameters are updated, or none at all. */
     void updateDiagnostics();
 
+    /* Enable CSV mode.
+       Diagnostics data are updated to verify whether CSV mode is enabled. */
+    void useCSVmode();
+
     bool getCSVmode() const;
     bool isConnected() const;
 
@@ -98,6 +102,20 @@ bool BrunelHand::getCSVmode() const
     return csvMode;
 }
 
+void BrunelHand::useCSVmode()
+{
+    this->updateDiagnostics();
+    if (csvMode)
+        return;
+
+    bhandcom.flush();
+    bhandcom.write( "A4\n" );
+    std::string line;
+    do {
+        line = bhandcom.readline();
+    } while (line.substr( 0, 8 ) != "CSV mode");
+}
+
 bool BrunelHand::isConnected() const
 {
     return connected;
@@ -132,7 +150,7 @@ int main( int argc, char **argv )
     nh.param( "hand_dev_file", devfile, std::string( "/dev/ttyACM0" ) );
 
     BrunelHand bhand( devfile );
-    bhand.updateDiagnostics();
+    bhand.useCSVmode();
 
     posep = nh.advertise<brunel_hand_ros::FingerPose>( "fpose", 10, true );
 
