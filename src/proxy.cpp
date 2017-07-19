@@ -35,7 +35,9 @@ public:
 
     std::vector<int> readFingersPose();
 
-    /* Attempt (blocking) to get current firmware diagnostics. */
+    /* Attempt (blocking) to get current firmware diagnostics.
+       This method is atomic with respect to diagnostics data, i.e., either all
+       known parameters are updated, or none at all. */
     void updateDiagnostics();
 
     bool getCSVmode() const;
@@ -103,7 +105,20 @@ bool BrunelHand::isConnected() const
 
 void BrunelHand::updateDiagnostics()
 {
-    // TODO
+    int incoming_csvMode = -1;
+    bhandcom.write( "#\n" );
+    while (incoming_csvMode < 0) {
+        std::string line = bhandcom.readline();
+        if (line.substr( 0, 5 ) != "Mode:")
+            continue;
+
+        if (line.find( "CSV" ) != std::string::npos) {
+            incoming_csvMode = 1;
+        } else {
+            incoming_csvMode = 0;
+        }
+    }
+    csvMode = incoming_csvMode ? true : false;
 }
 
 
