@@ -3,6 +3,7 @@
   <name>brunel_hand_ros</name>
   <version>0.0.0</version>
   <description>interface for the Brunel Hand (https://www.openbionics.com/shop/brunel-hand)</description>
+  <url>http://www.ros.org/wiki/brunel_hand_ros</url>
 
   <maintainer email="scott@rerobots.net">Scott C. Livingston</maintainer>
   <author email="scott@rerobots.net">Scott C. Livingston</author>
