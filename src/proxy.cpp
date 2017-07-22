@@ -58,6 +58,9 @@ public:
        Diagnostics data are updated to verify whether CSV mode is enabled. */
     void useCSVmode();
 
+    /* Enable motors if they are not already. */
+    void enableMotors();
+
     bool getCSVmode() const;
     bool getMotorsEnabled() const;
     bool isConnected() const;
@@ -196,6 +199,22 @@ void BrunelHand::useCSVmode()
     mtx_.unlock();
 }
 
+void BrunelHand::enableMotors()
+{
+    this->updateDiagnostics();
+    if (motorsEnabled)
+        return;
+
+    mtx_.lock();
+    bhandcom.flush();
+    bhandcom.write( "A3\n" );
+    std::string line;
+    do {
+        line = bhandcom.readline();
+    } while (line.substr( 0, 14 ) != "Motors ENABLED");
+    mtx_.unlock();
+}
+
 bool BrunelHand::isConnected() const
 {
     return connected;
@@ -243,6 +262,7 @@ int main( int argc, char **argv )
 
     BrunelHand bhand( devfile );
     bhand.useCSVmode();
+    bhand.enableMotors();
 
     posep = nh.advertise<brunel_hand_ros::FingerPose>( "fpose", 10, true );
     subraw = nh.subscribe( "/raw_input", 1,
