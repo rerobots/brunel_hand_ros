@@ -1,0 +1,11 @@
+Header header
+int16 primitive
+
+int16 FIST=0
+int16 PALM=1
+int16 THUMBSUP=2
+int16 POINT=3
+int16 PINCH=4
+int16 TRIPOD=5
+int16 FINGERROLL=6
+int16 THUMBROLL=7

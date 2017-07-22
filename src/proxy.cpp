@@ -25,6 +25,7 @@
 
 #include "brunel_hand_ros/FingerPose.h"
 #include "brunel_hand_ros/RawCommand.h"
+#include "brunel_hand_ros/HandPrimitive.h"
 
 
 class BrunelHand
@@ -50,6 +51,8 @@ public:
     void rawCommand( std::string cmd );
 
     void callbackRawCommand( const brunel_hand_ros::RawCommand &rc );
+
+    void callbackMotionPrimitive( const brunel_hand_ros::HandPrimitive &hp );
 
     /* Enable CSV mode.
        Diagnostics data are updated to verify whether CSV mode is enabled. */
@@ -79,6 +82,43 @@ void BrunelHand::rawCommand( std::string cmd )
 void BrunelHand::callbackRawCommand( const brunel_hand_ros::RawCommand &rc )
 {
     rawCommand( rc.command );
+}
+
+void BrunelHand::callbackMotionPrimitive( const brunel_hand_ros::HandPrimitive &hp )
+{
+    switch (hp.primitive) {
+    case 0: // Fist
+        rawCommand( "G0" );
+        break;
+
+    case 1: // Palm
+        rawCommand( "G1" );
+        break;
+
+    case 2: // Thumbs Up
+        rawCommand( "G2" );
+        break;
+
+    case 3: // Point
+        rawCommand( "G3" );
+        break;
+
+    case 4: // Pinch
+        rawCommand( "G4" );
+        break;
+
+    case 5: // Tripod
+        rawCommand( "G5" );
+        break;
+
+    case 6: // Finger Roll
+        rawCommand( "G6" );
+        break;
+
+    case 7: // Thumb Roll
+        rawCommand( "G7" );
+        break;
+    }
 }
 
 BrunelHand::BrunelHand( std::string devfile )
@@ -196,6 +236,7 @@ int main( int argc, char **argv )
     ros::NodeHandle nh;
     ros::Publisher posep;
     ros::Subscriber subraw;
+    ros::Subscriber submotprimitive;
 
     std::string devfile;
     nh.param( "hand_dev_file", devfile, std::string( "/dev/ttyACM0" ) );
@@ -206,6 +247,10 @@ int main( int argc, char **argv )
     posep = nh.advertise<brunel_hand_ros::FingerPose>( "fpose", 10, true );
     subraw = nh.subscribe( "/raw_input", 1,
                            &BrunelHand::callbackRawCommand, &bhand );
+    submotprimitive = nh.subscribe( "/motion_primitive",
+                                    1,
+                                    &BrunelHand::callbackMotionPrimitive,
+                                    &bhand );
 
     ros::Rate rate( 100 );
     while (ros::ok()) {
