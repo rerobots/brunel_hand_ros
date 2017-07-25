@@ -30,9 +30,12 @@ Dependencies:
 Getting started
 ---------------
 
-To start the main interface node
+As an initial demonstration, try
 
-    rosrun brunel_hand_ros proxy
+    roslaunch brunel_hand_ros toggle_fist.launch
+
+This will start examples/toggle-fist.py and the main interface node, named
+`proxy`. The hand should begin to alternate between open and closed fists.
 
 
 Internal interface notes
