@@ -27,6 +27,14 @@ Dependencies:
 * [serial](http://wjwwood.io/serial/) (on GitHub: https://github.com/wjwwood/serial/)
 
 
+Getting started
+---------------
+
+To start the main interface node
+
+    rosrun brunel_hand_ros proxy
+
+
 Internal interface notes
 ------------------------
 
