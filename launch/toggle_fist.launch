@@ -1,0 +1,7 @@
+<!--
+Setup and execute the example toggle-fist.py
+-->
+<launch>
+  <node pkg="brunel_hand_ros" type="proxy" name="proxy" output="log" />
+  <node pkg="brunel_hand_ros" type="toggle-fist.py" name="toggle_fist" output="screen" />
+</launch>
