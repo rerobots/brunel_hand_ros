@@ -16,6 +16,13 @@ Parameters
   Hand. Default value is /dev/ttyACM0
 
 
+topics:
+
+/fpose
+/motion_primitive
+/raw_input
+
+
 Installation and dependencies
 -----------------------------
 
