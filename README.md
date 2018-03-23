@@ -7,6 +7,7 @@ Introduction
 This ROS package defines several nodes and message types for working with the
 [Brunel Hand](https://www.openbionics.com/shop/brunel-hand)
 by [Open Bionics](https://www.openbionics.com).
+It is documented on the ROS Wiki at <https://wiki.ros.org/brunel_hand_ros>
 
 
 Parameters
